@@ -1,87 +1,97 @@
+/* Programa RelojAlarma.ino
+   Despliega en un LCD la hora y activa una alarma con LED y zumbador.
+
+   Configuración de pines:
+   * Pin RS del LCD al pin 12
+   * Pin E del LCD al pin 11
+   * Pin D4 del LCD al pin 5
+   * Pin D5 del LCD al pin 4
+   * Pin D6 del LCD al pin 3
+   * Pin D7 del LCD al pin 2
+   * Pin R/W del LCD a tierra
+   * Pin del interruptor al pin 13
+   * Pin del botón al pin 9
+   * Pin del zumbador al pin 15
+   * Pin del LED al pin 16
+*/
+
 #include <LiquidCrystal.h>
 
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2); // Conexión de la pantalla LCD
+// Variables LCD
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
-int buzzerPin = 15;
-int ledPin = 16;
-int botonPin = 9;
-int interruptorPin = 13;
+// Variables de tiempo
+long tiempoBase;
+int tiempoRet = 500;
 
+// Variables de alarma
+int pinInterruptor = 13;
+int pinBoton = 9;
+int pinZumbador = 15;
+int pinLED = 16;
 boolean alarmaActivada = false;
-unsigned long tiempoBase = 0;
-unsigned long tiempoActual = 0;
 
 void setup() {
+  // Configuración del LCD
   lcd.begin(16, 2);
-  pinMode(buzzerPin, OUTPUT);
-  pinMode(ledPin, OUTPUT);
-  pinMode(botonPin, INPUT_PULLUP);
-  pinMode(interruptorPin, INPUT_PULLUP);
 
-  lcd.setCursor(0, 0);
-  lcd.print("Hora actual:");
-  lcd.setCursor(0, 1);
-  lcd.print("00:00:00");
+  // Hora de reinicio
+  int horaInicio = 2;
+  int minutoInicio = 30;
+  tiempoBase = horaInicio * 3600000L + minutoInicio * 60000L;
 
-  while (digitalRead(botonPin) == HIGH) {
-    // Espera
-  }
-
-  activarAlarma();
-  tiempoBase = millis(); // Inicializa el tiempo base
+  // Configuración de pines
+  pinMode(pinInterruptor, INPUT_PULLUP); // Utiliza una resistencia pull-up interna
+  pinMode(pinBoton, INPUT_PULLUP); // Utiliza una resistencia pull-up interna
+  pinMode(pinZumbador, OUTPUT);
+  pinMode(pinLED, OUTPUT);
+  digitalWrite(pinZumbador, LOW);
+  digitalWrite(pinLED, LOW);
 }
 
 void loop() {
-  tiempoActual = millis() - tiempoBase; // Calcula el tiempo actual
-  int horaActual = (tiempoActual / 3600000) % 24; // Calcula la hora actual
-  int minutoActual = (tiempoActual / 60000) % 60;   // Calcula el minuto actual
-  int segundoActual = (tiempoActual / 1000) % 60;   // Calcula el segundo actual
+  long tiempoActual = millis() + tiempoBase;
+  int horaActual = tiempoActual / 3600000L;
+  int minActual = (tiempoActual % 3600000L) / 60000;
+  int segActual = (tiempoActual % 60000) / 1000;
 
-  // Formatea la hora en "hh:mm:ss"
-  char horaFormateada[9];
-  sprintf(horaFormateada, "%02d:%02d:%02d", horaActual, minutoActual, segundoActual);
+  Despliegue(horaActual, minActual, segActual);
 
-  // Muestra la hora en el LCD
-  lcd.setCursor(0, 1);
-  lcd.print(horaFormateada);
-
-  // Comprueba si es la hora de la toma y activa la alarma
-  if (horaActual == 14 && minutoActual == 30 && alarmaActivada) {
-    activarAlarma();
-  }
-
-  // Comprueba el interruptor para apagar la alarma
-  if (digitalRead(interruptorPin) == LOW) {
+  // Verifica si el interruptor está presionado
+  if (digitalRead(pinInterruptor) == LOW) {
+    if (!alarmaActivada) {
+      ActivarAlarma();
+      alarmaActivada = true;
+    }
+  } else {
     alarmaActivada = false;
-    noTone(buzzerPin);
-    digitalWrite(ledPin, LOW);
-    lcd.setCursor(0, 0);
-    lcd.print("Hora actual:");
-    lcd.setCursor(0, 1);
-    lcd.print("00:00:00");
   }
+
+  // Verifica si el botón está presionado para apagar la alarma
+  if (digitalRead(pinBoton) == LOW) {
+    ApagarAlarma();
+  }
+
+  delay(tiempoRet);
 }
 
-void activarAlarma() {
-  alarmaActivada = true;
-  tone(buzzerPin, 1000);
-  digitalWrite(ledPin, HIGH);
-
+void Despliegue(int horaActual, int minActual, int segActual) {
+  lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Hora de tomar:");
-  lcd.setCursor(0, 1);
-  lcd.print("Pastillas");
+  lcd.print("Hora ");
+  lcd.print(horaActual);
+  lcd.print(":");
+  lcd.print(minActual);
+  lcd.print(":");
+  lcd.print(segActual);
+}
 
-  while (digitalRead(botonPin) == HIGH) {
-    // Espera
-  }
+void ActivarAlarma() {
+  digitalWrite(pinZumbador, HIGH);
+  digitalWrite(pinLED, HIGH);
+}
 
-  alarmaActivada = false;
-  noTone(buzzerPin);
-  digitalWrite(ledPin, LOW);
-
-  lcd.setCursor(0, 0);
-  lcd.print("Hora actual:");
-  lcd.setCursor(0, 1);
-  lcd.print("00:00:00");
+void ApagarAlarma() {
+  digitalWrite(pinZumbador, LOW);
+  digitalWrite(pinLED, LOW);
 }
