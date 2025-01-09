@@ -1,85 +1,71 @@
-/* Programa Pastillero con Alarma */
+/* Programa Pastillero con Alarma y Reloj */
 
-// Incluye la biblioteca para LCD
 #include <LiquidCrystal.h>
-
-// Pines para el LCD
 LiquidCrystal lcd(4, 6, 11, 12, 13, 14);
 
-// Pines para la alarma
 int buzzerPin = 15;
 int ledPin = 16;
-
-// Botón para apagar la alarma
 int botonPin = 2;
+
 boolean alarmaActivada = false;
 
-// Hora de inicio (2:30 PM)
-int horaToma = 14;
-int minutoToma = 30;
-
 void setup() {
-  // Inicializa el LCD
   lcd.begin(16, 2);
-
-  // Configura el pin del buzzer y el LED como salida
   pinMode(buzzerPin, OUTPUT);
   pinMode(ledPin, OUTPUT);
+  pinMode(botonPin, INPUT_PULLUP);
 
-  // Configura el pin del botón como entrada
-  pinMode(botonPin, INPUT_PULLUP); // Usamos PULL-UP para evitar resistencia externa
-
-  // Muestra el mensaje inicial en el LCD
   lcd.setCursor(0, 0);
-  lcd.print("Hora de tomar:");
+  lcd.print("Hora actual:");
   lcd.setCursor(0, 1);
-  lcd.print("Pastillas");
+  lcd.print("00:00:00");
 
-  // Espera a que el botón sea presionado para activar la alarma
   while (digitalRead(botonPin) == HIGH) {
     // Espera
   }
 
-  // Activa la alarma
   activarAlarma();
 }
 
 void loop() {
-  // Obtiene la hora actual
   int horaActual = hour();
   int minutoActual = minute();
+  int segundoActual = second();
 
-  // Comprueba si es la hora de la toma
-  if (horaActual == horaToma && minutoActual == minutoToma && alarmaActivada) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Hora de tomar:");
-    lcd.setCursor(0, 1);
-    lcd.print("Pastillas");
+  // Formatea la hora en "hh:mm:ss"
+  char horaFormateada[9];
+  sprintf(horaFormateada, "%02d:%02d:%02d", horaActual, minutoActual, segundoActual);
+
+  // Muestra la hora en el LCD
+  lcd.setCursor(0, 1);
+  lcd.print(horaFormateada);
+
+  // Comprueba si es la hora de la toma y activa la alarma
+  if (horaActual == 14 && minutoActual == 30 && alarmaActivada) {
     activarAlarma();
   }
 }
 
 void activarAlarma() {
-  // Activa la alarma (enciende el buzzer y el LED)
   alarmaActivada = true;
-  tone(buzzerPin, 1000); // Tono de alarma
+  tone(buzzerPin, 1000);
   digitalWrite(ledPin, HIGH);
 
-  // Muestra el mensaje en el LCD
-  lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Hora de tomar:");
   lcd.setCursor(0, 1);
   lcd.print("Pastillas");
 
-  // Espera a que el botón sea presionado para apagar la alarma
   while (digitalRead(botonPin) == HIGH) {
     // Espera
   }
 
-  // Apaga la alarma (detiene el buzzer y apaga el LED)
   alarmaActivada = false;
   noTone(buzzerPin);
   digitalWrite(ledPin, LOW);
+
+  lcd.setCursor(0, 0);
+  lcd.print("Hora actual:");
+  lcd.setCursor(0, 1);
+  lcd.print("00:00:00");
 }
