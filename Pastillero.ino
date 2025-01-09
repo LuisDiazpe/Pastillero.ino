@@ -1,5 +1,4 @@
 #include <LiquidCrystal.h>
-#include <TimeLib.h> // Necesitas esta biblioteca para trabajar con el tiempo
 
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2); // Conexión de la pantalla LCD
 
@@ -9,6 +8,8 @@ int botonPin = 9;
 int interruptorPin = 13;
 
 boolean alarmaActivada = false;
+unsigned long tiempoBase = 0;
+unsigned long tiempoActual = 0;
 
 void setup() {
   lcd.begin(16, 2);
@@ -27,13 +28,14 @@ void setup() {
   }
 
   activarAlarma();
+  tiempoBase = millis(); // Inicializa el tiempo base
 }
 
 void loop() {
-  // Obtén la hora actual
-  int horaActual = hour();
-  int minutoActual = minute();
-  int segundoActual = second();
+  tiempoActual = millis() - tiempoBase; // Calcula el tiempo actual
+  int horaActual = (tiempoActual / 3600000) % 24; // Calcula la hora actual
+  int minutoActual = (tiempoActual / 60000) % 60;   // Calcula el minuto actual
+  int segundoActual = (tiempoActual / 1000) % 60;   // Calcula el segundo actual
 
   // Formatea la hora en "hh:mm:ss"
   char horaFormateada[9];
