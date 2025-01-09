@@ -1,5 +1,6 @@
-/* Programa RelojAlarmaPastillas.ino
-   Despliega en un LCD la hora y activa una alarma con mensaje, LED y zumbador.
+/*
+   Despliega en un LCD la hora, activa una alarma con mensaje, LED y zumbador, 
+   y maneja un motor que gira la rueda del pastillero.
 
    Configuración de pines:
    * Pin RS del LCD al pin 12
@@ -13,6 +14,8 @@
    * Pin del botón al pin 9
    * Pin del zumbador al pin 15
    * Pin del LED al pin 16
+   * Pin del motor al pin 7 (PWM)
+   * Pin del motor al pin 8
 */
 
 #include <LiquidCrystal.h>
@@ -31,6 +34,10 @@ int pinZumbador = 15;
 int pinLED = 16;
 boolean alarmaActivada = false;
 
+// Variables de motor
+int pinMotorDir = 7;  // Pin PWM para dirección
+int pinMotorEn = 8;   // Pin de control motor
+
 void setup() {
   // Configuración del LCD
   lcd.begin(16, 2);
@@ -41,12 +48,18 @@ void setup() {
   tiempoBase = horaInicio * 3600000L + minutoInicio * 60000L;
 
   // Configuración de pines
-  pinMode(pinInterruptor, INPUT_PULLUP); // Utiliza una resistencia pull-up interna
-  pinMode(pinBoton, INPUT_PULLUP); // Utiliza una resistencia pull-up interna
+  pinMode(pinInterruptor, INPUT_PULLUP);  // Utiliza una resistencia pull-up interna
+  pinMode(pinBoton, INPUT_PULLUP);        // Utiliza una resistencia pull-up interna
   pinMode(pinZumbador, OUTPUT);
   pinMode(pinLED, OUTPUT);
   digitalWrite(pinZumbador, LOW);
   digitalWrite(pinLED, LOW);
+  
+  // Configuración del motor
+  pinMode(pinMotorDir, OUTPUT);
+  pinMode(pinMotorEn, OUTPUT);
+  digitalWrite(pinMotorDir, LOW);   // Motor girando en sentido horario (CW)
+  digitalWrite(pinMotorEn, LOW);    // Motor desactivado al inicio
 }
 
 void loop() {
@@ -104,4 +117,14 @@ void ApagarAlarma() {
   digitalWrite(pinLED, LOW);
   lcd.setCursor(0, 1);
   lcd.print("                "); // Limpia la línea
+}
+
+void ActivarMotor() {
+  digitalWrite(pinMotorDir, HIGH);  // Cambia la dirección del motor (CW)
+  digitalWrite(pinMotorEn, HIGH);   // Activa el motor
+}
+
+void DetenerMotor() {
+  digitalWrite(pinMotorDir, LOW);   // Para el motor
+  digitalWrite(pinMotorEn, LOW);    // Desactiva el motor
 }
