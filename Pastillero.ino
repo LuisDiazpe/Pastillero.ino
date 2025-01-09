@@ -1,11 +1,10 @@
-/* Programa Pastillero con Alarma y Reloj */
-
 #include <LiquidCrystal.h>
-LiquidCrystal lcd(4, 6, 11, 12, 13, 14);
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2); // Conexión de la pantalla LCD
 
 int buzzerPin = 15;
 int ledPin = 16;
-int botonPin = 2;
+int botonPin = 9;
+int interruptorPin = 13;
 
 boolean alarmaActivada = false;
 
@@ -14,6 +13,7 @@ void setup() {
   pinMode(buzzerPin, OUTPUT);
   pinMode(ledPin, OUTPUT);
   pinMode(botonPin, INPUT_PULLUP);
+  pinMode(interruptorPin, INPUT_PULLUP);
 
   lcd.setCursor(0, 0);
   lcd.print("Hora actual:");
@@ -43,6 +43,17 @@ void loop() {
   // Comprueba si es la hora de la toma y activa la alarma
   if (horaActual == 14 && minutoActual == 30 && alarmaActivada) {
     activarAlarma();
+  }
+
+  // Comprueba el interruptor para apagar la alarma
+  if (digitalRead(interruptorPin) == LOW) {
+    alarmaActivada = false;
+    noTone(buzzerPin);
+    digitalWrite(ledPin, LOW);
+    lcd.setCursor(0, 0);
+    lcd.print("Hora actual:");
+    lcd.setCursor(0, 1);
+    lcd.print("00:00:00");
   }
 }
 
