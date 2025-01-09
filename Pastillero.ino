@@ -1,4 +1,6 @@
 #include <LiquidCrystal.h>
+#include <TimeLib.h> // Necesitas esta biblioteca para trabajar con el tiempo
+
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2); // Conexión de la pantalla LCD
 
 int buzzerPin = 15;
@@ -28,6 +30,7 @@ void setup() {
 }
 
 void loop() {
+  // Obtén la hora actual
   int horaActual = hour();
   int minutoActual = minute();
   int segundoActual = second();
