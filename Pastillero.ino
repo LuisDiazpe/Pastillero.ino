@@ -1,5 +1,5 @@
-/* Programa RelojAlarma.ino
-   Despliega en un LCD la hora y activa una alarma con LED y zumbador.
+/* Programa RelojAlarmaPastillas.ino
+   Despliega en un LCD la hora y activa una alarma con mensaje, LED y zumbador.
 
    Configuración de pines:
    * Pin RS del LCD al pin 12
@@ -62,6 +62,7 @@ void loop() {
     if (!alarmaActivada) {
       ActivarAlarma();
       alarmaActivada = true;
+      MostrarMensaje("Hora de tomar pastilla");
     }
   } else {
     alarmaActivada = false;
@@ -86,6 +87,13 @@ void Despliegue(int horaActual, int minActual, int segActual) {
   lcd.print(segActual);
 }
 
+void MostrarMensaje(const char *mensaje) {
+  lcd.setCursor(0, 1);
+  lcd.print("                "); // Limpia la línea
+  lcd.setCursor(0, 1);
+  lcd.print(mensaje);
+}
+
 void ActivarAlarma() {
   digitalWrite(pinZumbador, HIGH);
   digitalWrite(pinLED, HIGH);
@@ -94,4 +102,6 @@ void ActivarAlarma() {
 void ApagarAlarma() {
   digitalWrite(pinZumbador, LOW);
   digitalWrite(pinLED, LOW);
+  lcd.setCursor(0, 1);
+  lcd.print("                "); // Limpia la línea
 }
